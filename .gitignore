@@ -37,6 +37,8 @@ composer.phar
 # IDE files
 .idea/
 .settings/
+.project/
+.buildpath/
 
 # Others
 Thumbs.db
