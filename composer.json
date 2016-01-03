@@ -43,5 +43,19 @@
   	"psr-4": {
     	"ADN\\Extract\\": "server/" 
 	}
+  },
+  "scripts": {
+    "post-install-cmd": [
+    ],
+    "post-update-cmd": [
+    ]
+  },
+  "config": {
+    "bin-dir": "bin"
+  },
+  "extra": {
+    "symfony-app-dir": "server/",
+    "symfony-web-dir": "www/",
+    "symfony-assets-install": "symlink"
   }
 }

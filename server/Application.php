@@ -27,7 +27,7 @@ use Silex ;
 //use Silex\Provider\HttpCacheServiceProvider ;
 //use Silex\Provider\MonologServiceProvider ;
 //use Silex\Provider\SecurityServiceProvider ;
-//use Silex\Provider\SessionServiceProvider ;
+use Silex\Provider\SessionServiceProvider ;
 //use Silex\Provider\TranslationServiceProvider ;
 use Silex\Provider\TwigServiceProvider ;
 //use Silex\Provider\UrlGeneratorServiceProvider ;
@@ -35,6 +35,7 @@ use Silex\Provider\TwigServiceProvider ;
 //use Symfony\Component\Security\Core\Encoder\PlaintextPasswordEncoder ;
 //use Symfony\Component\Security\Http\Authentication\AuthenticationUtils ;
 //use Symfony\Component\Translation\Loader\YamlFileLoader ;
+use Symfony\Component\HttpFoundation\Response ;
 
 class BaseApplication extends Silex\Application {
     protected $rootDir ;
@@ -112,7 +113,7 @@ class Application extends BaseApplication {
 		lmv::tokenObject () ;
 		
 		//$app->register (new HttpCacheServiceProvider ()) ;
-		//$app->register (new SessionServiceProvider ()) ;
+		$app->register (new SessionServiceProvider ()) ;
 		//$app->register (new ValidatorServiceProvider ()) ;
 		//$app->register (new FormServiceProvider ()) ;
 		//$app->register (new UrlGeneratorServiceProvider ()) ;
@@ -159,7 +160,36 @@ class Application extends BaseApplication {
 		//    return ($twig) ;
 		//})) ;
 		//$app->mount ('', new ControllerProvider ()) ;
+		
+		$app->mount ('/api/projects', new LmvProjects ()) ;
 		$app->mount ('/api/results', new LmvResults ()) ;
+		
+		$app->get ('/', function () use ($app) {
+			return ($app ['twig']->render ('index.html.twig', [])) ;
+		}) ;
+		$app->get ('/explore/{identifier}', function ($identifier) use ($app) {
+			$bucket =lmv::getDefaultBucket () ;
+			$zipExist =$app->extractDir ("/$identifier.zip", true) !== false ;
+			$path =$app->dataDir ("/$identifier.resultdb.json") ;
+			$content =file_get_contents ($path) ;
+			if ( $content === false ) {
+				$app->abort (Response::HTTP_NOT_ACCEPTABLE, "DB record not present") ;
+				return ;
+			}
+			$data =json_decode ($content) ;
+			
+			return ($app ['twig']->render (
+				'explore.twig',
+				[
+					'bucket' => $bucket,
+					'extracted' => ($zipExist ? 'true' : 'false'),
+					'urn' => $data->urn,
+					'accessToken' => lmv::bearer (),
+					'root' => $identifier
+				]
+			)) ;
+		}) ;
+		
 	}
 
 }

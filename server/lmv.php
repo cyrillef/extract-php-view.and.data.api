@@ -216,7 +216,7 @@ class lmv {
 	
 	public function createBucketIfNotExist ($policy ='transient') {
 		$response =$this->checkBucket ($policy) ;
-		return ($reponse ? : $this->createBucket ($policy)) ;
+		return ($response ? : $this->createBucket ($policy)) ;
 	}
 	
 	// PUT /oss/v1/buckets/:bucket/objects/:filename
@@ -397,7 +397,7 @@ class lmv {
 				return ('') ;
 			$content =file_get_contents ($path) ;
 			$data =(object)json_decode ($content, true) ;
-			return (base64_decode (data.urn)) ;
+			return (base64_decode ($data->urn)) ;
 		}
 		return ('') ;
 	}
