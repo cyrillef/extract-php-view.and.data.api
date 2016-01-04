@@ -214,28 +214,17 @@ class LmvProjects implements ControllerProviderInterface {
 		$policy ='transient' ;
 		$connections =$request->body ;
 	
-// 			function traverseConnections (conn) {
-// 				var items =[] ;
-// 				for ( var i =0 ; i < conn.length ; i++ ) {
-// 					items.push (conn [i].uniqueIdentifier) ;
-// 					items =items.concat (traverseConnections (conn [i].children)) ;
-// 				}
-// 				return (items) ;
-// 			}
 		utils::log ("master: {$connections->uniqueIdentifier}") ;
-		$items =[ $connections->uniqueIdentifier ] ;
-		$items =array_merge ($items, traverseConnections ($connections->children)) ;
-		
-		// This is to help the upload progress bar to be more precise
+		// Save parameters for the translate process
 		$path =$app->dataDir ("/{$connections->uniqueIdentifier}.dependencies.json") ;
-		if ( file_put_contents ($path, json_encode ($items)) === false ) {
+		if ( file_put_contents ($path, json_encode ($connections)) === false ) {
 			utils::log ('ERROR: project dependencies not saved :(') ;
 			return (new Response ('', Response::HTTP_NOT_FOUND, [ 'Content-Type' => 'text/plain' ])) ;
 		}
 		
 		$bWindows =substr (php_uname (), 0, 7) == 'Windows' ;
 		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : 'php ' ;
-		$cmd .=__DIR__ . "/translate.php lmv:transltor {$connections->uniqueIdentifier}" ;
+		$cmd .=__DIR__ . "/translate.php lmv:translator {$connections->uniqueIdentifier}" ;
 		utils::log ("Launching command: $cmd") ;
 		$result =null ;
 		if ( $bWindows )

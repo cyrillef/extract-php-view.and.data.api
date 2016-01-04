@@ -36,6 +36,9 @@ class lmv {
 	const HTTP_NOT_FOUND =404 ;
 	
 	public function __construct ($bucketName =null) {
+		$ret =preg_match ('/^[-_.a-z0-9]{3,128}$/', $bucketName) ;
+		if ( !$ret )
+			throw new Exception ('Invalid Bucket Name') ;
 		$this->bucket =$bucketName ? : lmv::getDefaultBucket (null, true) ;
 		$this->rootDir =utils::realpath (__DIR__ . '/../') ;
 	}

@@ -36,6 +36,8 @@ class Extractor {
 	
 	public function __construct ($identifier, $bucketName =null) {
 		$this->identifier =$identifier ;
+		if ( empty ($bucketName) )
+			$bucketName =lmv::getDefaultBucket () ;
 		$this->lmv =new lmv ($bucketName) ;
 		$this->urn =$this->lmv->getURN ($this->identifier) ;
 		$this->mgr =new ExtractorProgressMgr ($this->identifier) ;

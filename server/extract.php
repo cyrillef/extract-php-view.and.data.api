@@ -49,7 +49,6 @@ class ExtractCommand extends Command {
 	}
 
 	protected function execute (InputInterface $input, OutputInterface $output) {
-		//utils::log ('extract launched 1!') ;
 		$bucket =lmv::getDefaultBucket () ;
 		$identifier =$input->getArgument ('identifier') ;
 		if ( !$identifier )
