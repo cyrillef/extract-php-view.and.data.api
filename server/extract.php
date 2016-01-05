@@ -63,7 +63,7 @@ class ExtractCommand extends Command {
 		$extractor =new Extractor ($identifier, $bucket) ;
 		$bSuccess =$extractor->extract () ;
 		
-		$output->writeln ($bSuccess ? 'ok' : 'oops') ;
+		utils::log ($bSuccess ? 'ok' : 'oops') ;
 	}
 	
 }

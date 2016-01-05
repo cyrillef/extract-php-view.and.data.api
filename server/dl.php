@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface ;
 use Symfony\Component\Console\Application ;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Filesystem\Filesystem ;
-use Unirest ;
+//use Unirest ;
 
 ini_set ('display_errors', E_ALL) ;
 require_once __DIR__ . '/../vendor/autoload.php' ;
@@ -60,28 +60,32 @@ class DlCommand extends Command {
 		$content =file_get_contents ($path) ;
 		$data =json_decode ($content) ;
 		
-		Unirest\Request::verifyPeer (false) ;
-		$response =Unirest\Request::get ($data->uri, [], null) ;
+		$localFile =utils::normalize (__DIR__ . "/../tmp/{$data->name}") ;
+		$file =fopen ($localFile, 'wb') ;
+		$http =new \ADN\Extract\HttpRequest ($data->uri, [], null, null) ;
+		$response =$http->get (function ($code, $chunk) use ($file, $data, $path) {
+			if ( $code != 'data' )
+				return (false) ;
+			fwrite ($file, $chunk) ;
+			$data->bytesRead +=strlen ($chunk) ;
+			file_put_contents ($path, json_encode ($data)) ;
+			return (true) ;
+		}) ;
+		fclose ($file) ;
 		
-		// .on ('data', function (chunk) {
-		// 	data.bytesRead +=chunk.length ;
-		// 	fs.writeFile ('data/' + identifier + '.json', JSON.stringify (data), function (err) {}) ;
-		// })
 		if ( !$response || $response->code != Response::HTTP_OK ) {
 			$output->writeln ('oops') ;
 			$fs =new Filesystem () ;
 			$fs->remove ($path) ;
+			$fs->remove ($localFile) ;
 			return ;
 		}
 		
-		$data->size =strlen ($response->raw_body) ;
+		$data->size =utils::findKey ($response->headers, 'Content-Length') ;
 		$data->bytesRead =$data->size ;
 		file_put_contents ($path, json_encode ($data)) ;
-		
-		$localFile =utils::normalize (__DIR__ . "/../tmp/{$data->name}") ;
-		file_put_contents ($localFile, $response->raw_body) ;
 
-		$output->writeln ('ok') ;
+		utils::log ('ok') ;
 	}
 	
 }

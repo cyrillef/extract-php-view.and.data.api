@@ -57,7 +57,7 @@ class TranslateCommand extends Command {
 		$translator =new Translator ($identifier, $bucket) ;
 		$bSuccess =$translator->$translate () ;
 	
-		$output->writeln ($bSuccess ? 'ok' : 'oops') ;
+		utils::log ($bSuccess ? 'ok' : 'oops') ;
 	}
 	
 }

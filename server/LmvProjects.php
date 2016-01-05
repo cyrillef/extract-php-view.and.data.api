@@ -222,19 +222,8 @@ class LmvProjects implements ControllerProviderInterface {
 			return (new Response ('', Response::HTTP_NOT_FOUND, [ 'Content-Type' => 'text/plain' ])) ;
 		}
 		
-		$bWindows =substr (php_uname (), 0, 7) == 'Windows' ;
-		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : 'php ' ;
-		$cmd .=__DIR__ . "/translate.php lmv:translator {$connections->uniqueIdentifier}" ;
-		utils::log ("Launching command: $cmd") ;
-		$result =null ;
-		if ( $bWindows )
-			$result =pclose (popen ("start /B \"\" $cmd", 'w')) ;
-			//$result =exec ("start /B \"\" $cmd") ;
-		else
-			$result =exec ("$cmd > /dev/null 2>&1 &") ;
-		utils::log ("Command returned: $result") ;
-	
-		if ( $result == -1 )
+		$result =utils::executeScript ("/translate.php lmv:translator {$connections->uniqueIdentifier}") ;
+		if ( $result === false )
 			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 		// We submitted, no clue if it was successful or if it will fail.
 		$response =(object)array ( 'status' => 'submitted' ) ;

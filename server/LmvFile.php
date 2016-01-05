@@ -76,7 +76,7 @@ class LmvFile implements ControllerProviderInterface {
 	}
 	
 	public function details (Silex\Application $app/*, Request $request*/, $identifier) {
-		$request =new \Flow\Request () ;
+		//$request =new \Flow\Request () ;
 		$path =utils::realpath (__DIR__ . "/../data/$identifier.json") ;
 		if ( $path === false )
 			return (new Response ('', Response::HTTP_NOT_FOUND, [ 'Content-Type' => 'text/plain' ])) ;
@@ -118,15 +118,20 @@ class LmvFile implements ControllerProviderInterface {
 		$original_filename =$bodyParams->name ? : str_replace ('/.*\//', '', str_replace ('/[\?#].*$/', '', urldecode ($uri))) ;
 
 		Unirest\Request::verifyPeer (false) ;
-		$response =Unirest\Request::head ($uri, [], null) ;
+		//$response =Unirest\Request::head ($uri, [], null) ;
+		
+		$http =new \ADN\Extract\HttpRequest ($uri, [], null, null) ;
+		$response =$http->head () ;
+		
 		if ( !$request || $response->code != Response::HTTP_OK )
 			return (new Response ('', $response->code, [ 'Content-Type' => 'text/plain' ])) ;
 		
+		$length =utils::findKey ($response->headers, 'Content-Length') ? : -1 ;
 		$data =(object)array (
 			'key' => $identifier,
 			'name' => $original_filename,
 			'uri' => $uri,
-			'size' => ($response->headers ['content-length'] ? : -1),
+			'size' => $length,
 			'bytesRead' => 0,
 			'bytesPosted' => 0
 		) ;
@@ -134,35 +139,27 @@ class LmvFile implements ControllerProviderInterface {
 		if ( file_put_contents ($path, json_encode ($data)) === false )
 			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 			
-		$bWindows =substr (php_uname (), 0, 7) == 'Windows' ;
-		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : 'php ' ;
-		$cmd .=__DIR__ . "/dl.php lmv:dl $identifier" ;
-		utils::log ("Launching command: $cmd") ;
-		$result =null ;
- 		if ( $bWindows )
- 			$result =pclose (popen ("start /B \"\" $cmd", 'w')) ;
- 			//$result =exec ("start /B \"\" $cmd") ;
- 		else
- 			$result =exec ("$cmd > /dev/null 2>&1 &") ;
- 		utils::log ("Command returned: $result") ;
-		
-		if ( $result == -1 )
-			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
-		
+		$result =utils::executeScript ("/dl.php lmv:dl $identifier") ;
+		if ( $result === false )
+  			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 		$data =(object)array ( 'status' => $identifier ) ;
 		return (new JsonResponse ($data, Response::HTTP_OK)) ;
 	}
 	
 	public function uriOptions (Silex\Application $app, Request $request) {
-		$identifier =$request->body->identifier ;
+		$bodyParams =json_decode ($request->getContent ()) ;
+		$identifier =$bodyParams->identifier ;
 		$path =utils::normalize (__DIR__ . "/../data/$identifier.json") ;
-		$content =file_get_contents ($path) ;
-		if ( $content === false )
-			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 		try {
+			$content =file_get_contents ($path) ;
+			if ( $content === false ) {
+				//return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
+				throw new Exception ('Cannot access file') ;
+			}
 			$data =json_decode ($content) ;
-			if ( $data->size == -1 )
+			if ( $data->size == -1 ) {
 				throw new Exception ('error') ;
+			}
 			$progress =intval (floor (100.0 * $data->bytesRead / $data->size)) ;
 			return (new JsonResponse (
 				(object)array ( 'status' => $identifier, 'progress' => $progress ),

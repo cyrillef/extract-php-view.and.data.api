@@ -183,23 +183,10 @@ class LmvResults implements ControllerProviderInterface {
 				utils::log ("Could not create lock file - $lock") ;
 		}
 		
-		$bWindows =substr (php_uname (), 0, 7) == 'Windows' ;
-		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : 'php ' ;
-		$cmd .=__DIR__ . "/extract.php lmv:extractor $identifier" ;
-		utils::log ("Launching command: $cmd") ;
-		$result =null ;
- 		if ( $bWindows )
- 			$result =pclose (popen ("start /B \"\" $cmd", 'w')) ;
- 			//$result =exec ("start /B \"\" $cmd") ;
- 		else
- 			$result =exec ("$cmd > /dev/null 2>&1 &") ;
- 		utils::log ("Command returned: $result") ;
-		
-		if ( $result == -1 )
+		$result =utils::executeScript ("/extract.php lmv:extractor $identifier") ;
+		if ( $result === false )
 			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
-		//return (new Response ('ok', Response::HTTP_OK, [ 'Content-Type' => 'text/plain' ])) ;
-		echo 'ok' ;
-		exit ;
+		return (new Response ('ok', Response::HTTP_OK, [ 'Content-Type' => 'text/plain' ])) ;
 	}
 	
 	public function projectProgress (Silex\Application $app, $identifier) {
