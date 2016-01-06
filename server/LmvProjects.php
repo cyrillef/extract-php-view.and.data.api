@@ -45,6 +45,9 @@ class LmvProjects implements ControllerProviderInterface {
 		$results->get ('/', 'ADN\Extract\LmvProjects::bucketDetails') ;
 		// Submit a new bucket/identifier for translation
 		$results->post ('/', 'ADN\Extract\LmvProjects::submitProject') ;
+
+		// !!! be careful the post request should get a ending / otherwise the framwork will
+		//     fail to map the routing
 		
 		return ($results) ;
 	}
@@ -111,8 +114,8 @@ class LmvProjects implements ControllerProviderInterface {
 					}
 					$content =file_get_contents ($path) ;
 					$data2 =json_decode ($content) ;
-					$size +=(data2.hasOwnProperty ('size') ? parseInt (data2.size) : data2.objects [0].size) ;
-					$uploaded +=(data2.hasOwnProperty ('bytesPosted') ? parseInt (data2.bytesPosted) : data2.objects [0].size) ;
+					$size +=(isset ($data2->size) ? intval ($data2->size) : $data2->objects [0]->size) ;
+					$uploaded +=(isset ($data2->bytesPosted) ? intval ($data2->bytesPosted) : $data2->objects [0]->size) ;
 				}
 				$pct =0 ;
 				if ( $size != 0 )
@@ -212,8 +215,8 @@ class LmvProjects implements ControllerProviderInterface {
 	public function submitProject (Silex\Application $app, Request $request) {
 		$bucket =lmv::getDefaultBucket () ;
 		$policy ='transient' ;
-		$connections =$request->body ;
-	
+		$connections =json_decode ($request->getContent ()) ;
+		
 		utils::log ("master: {$connections->uniqueIdentifier}") ;
 		// Save parameters for the translate process
 		$path =$app->dataDir ("/{$connections->uniqueIdentifier}.dependencies.json") ;

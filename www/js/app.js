@@ -113,7 +113,7 @@ function listProjects () {
 
 function submitProject (data) {
 	$.ajax ({
-		url: '/api/projects',
+		url: '/api/projects/',
 		type: 'post',
 		data: JSON.stringify (data),
 		contentType: 'application/json',

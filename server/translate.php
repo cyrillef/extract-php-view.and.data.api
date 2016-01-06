@@ -55,7 +55,7 @@ class TranslateCommand extends Command {
 			$identifier ='1799-Auobj' ;
 	
 		$translator =new Translator ($identifier, $bucket) ;
-		$bSuccess =$translator->$translate () ;
+		$bSuccess =$translator->translate () ;
 	
 		utils::log ($bSuccess ? 'ok' : 'oops') ;
 	}

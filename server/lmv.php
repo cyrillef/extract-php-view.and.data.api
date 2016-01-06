@@ -36,10 +36,10 @@ class lmv {
 	const HTTP_NOT_FOUND =404 ;
 	
 	public function __construct ($bucketName =null) {
-		$ret =preg_match ('/^[-_.a-z0-9]{3,128}$/', $bucketName) ;
-		if ( !$ret )
-			throw new Exception ('Invalid Bucket Name') ;
 		$this->bucket =$bucketName ? : lmv::getDefaultBucket (null, true) ;
+		$ret =preg_match ('/^[-_.a-z0-9]{3,128}$/', $this->bucket) ;
+		if ( !$ret )
+			throw new \Exception ('Invalid Bucket Name') ;
 		$this->rootDir =utils::realpath (__DIR__ . '/../') ;
 	}
 	
@@ -105,7 +105,7 @@ class lmv {
         if ( static::$token !== null )
         	return (static::$token) ;
         $content =file_get_contents (lmv::tokenPath ()) ;
-        return (static::$token =(object)json_decode ($content, true)) ;
+        return (static::$token =(object)json_decode ($content)) ;
 	}
 	
 	// POST /authentication/v1/authenticate
@@ -230,7 +230,7 @@ class lmv {
 		if ( !$path )
 			return (null) ;
 		$content =file_get_contents ($path) ;
-		$data =json_decode ($content, true) ;
+		$data =json_decode ($content) ;
 		$serverFile =$this->tmpDir ("/{$data->name}", true) ;
 		if ( !$serverFile )
 			return (null) ;
@@ -295,7 +295,7 @@ class lmv {
 		$response->code =$matches [3] ;
 		
 		$path =$this->dataDir ("/$identifier.json") ;
-		if ( $response->code != lmv::HTTP_OK || !isset ($response->body->objects [0] ['key']) ) {
+		if ( $response->code != lmv::HTTP_OK || !isset ($response->body->objects [0]->key) ) {
 			utils::log ('singleUpload fail ' . $response->code) ;
 			unlink ($path) ;
 			return (null) ;
@@ -312,7 +312,7 @@ class lmv {
 		if ( !$path )
 			return (null) ;
 		$content =file_get_contents ($path) ;
-		$data =(object)json_decode ($content, true) ;
+		$data =(object)json_decode ($content) ;
 		$serverFile =$this->tmpDir ("/{$data->name}", true) ;
 		if ( !$serverFile )
 			return (null) ;
@@ -392,26 +392,31 @@ class lmv {
 		$path =$this->dataDir ("/$identifier.json", true) ;
 		if ( $path ) {
 			$content =file_get_contents ($path) ;
-			$data =(object)json_decode ($content, true) ;
-			return ($data->objects [0] ['id']) ;
+			$data =(object)json_decode ($content) ;
+			if ( !isset ($data->objects) )
+				return ('') ;
+			return ($data->objects [0]->id) ;
 		} else {
 			$path =$this->dataDir ("/$identifier.resultdb.json", true) ;
 			if ( !$path )
 				return ('') ;
 			$content =file_get_contents ($path) ;
-			$data =(object)json_decode ($content, true) ;
+			$data =(object)json_decode ($content) ;
 			return (base64_decode ($data->urn)) ;
 		}
 		return ('') ;
 	}
 	
 	static public function getFilename ($identifier) {
-		$path =$this->dataDir ("/$identifier.json", true) ;
+		$lmv =new lmv () ;
+		$path =$lmv->dataDir ("/$identifier.json", true) ;
 		if ( !$path )
 			return ('') ;
 		$content =file_get_contents ($path) ;
-		$data =(object)json_decode ($content, true) ;
-		return (isset ($data->name) ? $data->name : $data->objects [0] ['key']) ;
+		if ( $content === false )
+			return ('') ;
+		$data =(object)json_decode ($content) ;
+		return (isset ($data->name) ? $data->name : $data->objects [0]->key) ;
 	}
 	
 	// GET /oss/v1/buckets/:bucketkey/objects/:objectKey/details
@@ -433,7 +438,7 @@ class lmv {
 			return (null) ;
 		}
 		
-		$identifier =$response->body->objects [0] ['size'] . '-' . str_replace ('/[^0-9A-Za-z_-]/g', '', $filename) ;
+		$identifier =$response->body->objects [0]->size . '-' . str_replace ('/[^0-9A-Za-z_-]/g', '', $filename) ;
 		$path =$this->dataDir ('/' . $response->body->{'bucket-key'} . $identifier . '.json') ;
 		if ( file_put_contents ($path, json_encode ($response->body)) === false )
 			utils::log ("Could not save objectDetails response to disk! - $path") ;
@@ -451,7 +456,7 @@ class lmv {
 					'parentPath' => static::getFilename ($master)
 				)
 			) ;
-			$items =array_merge ($items, traverseConnections ($conn [$i]->uniqueIdentifier, $conn [$i]->children)) ;
+			$items =array_merge ($items, $this->traverseConnections ($conn [$i]->uniqueIdentifier, $conn [$i]->children)) ;
 		}
 		return ($items) ;
 	}
@@ -464,7 +469,7 @@ class lmv {
 			'master' => $this->getURN ($master),
 			'dependencies' => array ()
 		) ;
-		$desc->dependencies =traverseConnections ($master, $connections->children) ;
+		$desc->dependencies =$this->traverseConnections ($master, $connections->children) ;
 		$path =$this->dataDir ("/$master.connections.json") ;
 		if ( file_put_contents ($path, json_encode ($desc)) === false )
 			utils::log ("Could not save connections file to disk! - $path") ;
@@ -611,11 +616,11 @@ class lmv {
 		$path =$this->dataDir ("/$identifier.json", true) ;
 		if ( $path ) {
 			$content =file_get_contents ($path) ;
-			$data =(object)json_decode ($content, true) ;
+			$data =(object)json_decode ($content) ;
 
-			$endpoint =$data->objects [0] ['location'] ;
-			$filename =$data->objects [0] ['key'] ;
-			$accept =$data->objects [0] ['content-type'] ;
+			$endpoint =$data->objects [0]->location ;
+			$filename =$data->objects [0]->key ;
+			$accept =$data->objects [0]->{'content-type'} ;
 		} else {
 			// Try to rebuild it ourself
 			$filename =static::getFilename ($identifier) ;

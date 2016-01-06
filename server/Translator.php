@@ -39,14 +39,14 @@ class Translator {
 	public function translate () {
 		//utils::log ('translate launched!') ;
 		try {
-			$path =$app->dataDir ("/{$this->identifier}.dependencies.json", true) ;
+			$path =$this->lmv->dataDir ("/{$this->identifier}.dependencies.json", true) ;
 			if ( $path === false )
 				throw new Exception ('No dependency file found') ;
 			$content =file_get_contents ($path) ;
 			$connections =json_decode ($content) ;
 			
 			$items =[ $connections->uniqueIdentifier ] ;
-			$items =array_merge ($items, traverseConnections ($connections->children)) ;
+			$items =array_merge ($items, $this->traverseConnections ($connections->children)) ;
 			// This is to help the upload progress bar to be more precise
 			if ( file_put_contents ($path, json_encode ($items)) === false ) {
 				utils::log ('ERROR: project dependencies not saved :(') ;
@@ -105,7 +105,7 @@ class Translator {
 					'success' => '0%',
 					'urn' => $urn
 			) ;
-			$path =$app->dataDir ("/{$this->identifier}.resultdb.json") ;
+			$path =$this->lmv->dataDir ("/{$this->identifier}.resultdb.json") ;
 			if ( file_put_contents ($path, json_encode ($data)) === false )
 				utils::log ("Could not save file to disk - $path") ;
 	
@@ -151,9 +151,10 @@ class Translator {
 	private function traverseConnections ($conn) {
 		$items =[] ;
 		foreach ( $conn as $item ) {
-			$items [] ($item->uniqueIdentifier) ;
-			$items =array_merge ($items, traverseConnections ($item->children)) ;
+			$items [] =$item->uniqueIdentifier ;
+			$items =array_merge ($items, $this->traverseConnections ($item->children)) ;
 		}
-		return (items) ;
+		return ($items) ;
 	}
+	
 }
