@@ -223,10 +223,10 @@ class LmvResults implements ControllerProviderInterface {
 			$response,
 			Response::HTTP_OK,
 			[
-				'Cache-Control', 'private',
+				'Cache-Control' => 'private',
 				'Content-Type' => 'application/octet-stream',
-				'Content-Length' => strlen ($reponse),
-				'Content-Disposition', "attachment; filename=\"$filename\""
+				'Content-Length' => strlen ($response),
+				'Content-Disposition' => "attachment; filename=\"$filename\""
 			]
 		)) ;
 		// Send headers before outputting anything?
