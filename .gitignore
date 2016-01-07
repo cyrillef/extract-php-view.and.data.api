@@ -31,9 +31,9 @@ bower_components
 # Composer files
 report/
 vendor/
-composer.lock
-composer.phar
-bowerphp.phar
+#composer.lock
+#composer.phar
+#bowerphp.phar
 
 # IDE files
 .idea/
