@@ -116,14 +116,15 @@ There is 3 ways to configure the sample with your application keys, please choos
 make sure to read [the developer notes](test/readme.md) before anything.<br />
 
 1. Download and install [PHP](http://php.net/)
-2. Install [Composer](https://getcomposer.org/) 
-3. Download this repo anywhere you want (the server will need to write files, so make sure you install in
+2. Download and Install [Composer](https://getcomposer.org/)
+3. Download and Install [BowerPHP](http://bowerphp.org/) 
+4. Download this repo anywhere you want (the server will need to write files, so make sure you install in
    a location where you have write permission, at least the 'tmp', 'data' and '/www/extracted' folders)
-4. Execute 'composer install', this command will download and install the required PHP modules & bower modules automatically for you.<br />
+5. Execute 'composer install', this command will download and install the required PHP modules & bower modules automatically for you.<br />
    ```
    composer install
    ```
-5. Install your credential keys to run the sample: <br />
+6. Install your credential keys to run the sample: <br />
    a. Option 1: enter your keys in a permanent file which will never be saved in your GitHub repo. This is
       because you do not want to expose your keys to anyone, and this is the reason why this file is never
       saved in the repo. You can decide to save this file in a private GitHub repo by editing the .gitignore file.
@@ -168,8 +169,8 @@ make sure to read [the developer notes](test/readme.md) before anything.<br />
             <br />
             Replace keys placeholder xxx with your own keys.
 
-6. You are done for the setup, launch the server.
-7. If you choose option b. for setup, launch http://localhost[:port]/setup.html, otherwise you are good to go with
+7. You are done for the setup, launch the server.
+8. If you choose option b. for setup, launch http://localhost[:port]/setup.html, otherwise you are good to go with
    http://localhost[:port]/
 
 

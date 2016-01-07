@@ -44,8 +44,16 @@ class Translator {
 				throw new Exception ('No dependency file found') ;
 			$content =file_get_contents ($path) ;
 			$connections =json_decode ($content) ;
+			if ( $content === false || !is_object ($connections) || is_null ($connections [0]) ) {
+				utils::log ('ERROR: project dependencies corrupted :(') ;
+				// Rebuild one master only
+				$connections =(object)array (
+					'uniqueIdentifier' => $this->identifier,
+					'children' => []
+				) ;
+			}
 			
-			$items =[ $connections->uniqueIdentifier ] ;
+			$items =[ $this->identifier ] ;
 			$items =array_merge ($items, $this->traverseConnections ($connections->children)) ;
 			// This is to help the upload progress bar to be more precise
 			if ( file_put_contents ($path, json_encode ($items)) === false ) {

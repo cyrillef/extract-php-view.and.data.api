@@ -113,6 +113,7 @@ class lmv {
 		$config =lmv::config () ;
 		
 		utils::log ('Refreshing Autodesk Service token') ;
+		utils::log ($config ['credentials'] ['client_id']) ;
 		Unirest\Request::verifyPeer (false) ;
 		//Unirest\Request::jsonOpts (true, 512, JSON_NUMERIC_CHECK & JSON_FORCE_OBJECT & JSON_UNESCAPED_SLASHES) ;
 		//Unirest\Request::curlOpts( array ( CURLOPT_PROXY => '127.0.0.1:8888' )) ;
@@ -246,6 +247,7 @@ class lmv {
 	
 	// PUT /oss/v1/buckets/:bucket/objects/:filename
 	protected function singleUpload ($identifier) {
+		utils::log (" singleUpload $identifier") ;
 		$path =$this->dataDir ("/$identifier.json", true) ;
 		if ( !$path )
 			return (null) ;
@@ -278,7 +280,9 @@ class lmv {
 			$str =fread ($file, 4096) ;
 			fwrite ($sock, $str) ;
 			$data->bytesPosted =ftell ($file) ;
-			file_put_contents ($path, json_encode ($data)) ;
+			utils::log (" progress {$data->bytesPosted} ", "\r") ;
+			if ( file_put_contents ($path, json_encode ($data)) === false )
+				utils::log ("Could not save file - $path") ;
 		}
 		fclose ($file) ;
 		
@@ -307,7 +311,8 @@ class lmv {
 	}
 	
 	// PUT /oss/v1/buckets/:bucket/objects/:filename/resumable
-	protected function resumablepload ($identifier) {
+	protected function resumableUpload ($identifier) {
+		utils::log (" resumableUpload $identifier") ;
 		$path =$this->dataDir ("/$identifier.json", true) ;
 		if ( !$path )
 			return (null) ;
@@ -335,6 +340,7 @@ class lmv {
 				. $start + '-'
 				. $end + '/'
 				. $total ;
+			utils::log (" resumableUpload $identifier - $contentRange") ;
 			$sock =fsockopen (str_replace ('https', 'ssl', $config ['BaseEndPoint']), 443, $errno, $errstr, 30) ;
 			if ( !$sock ) {
 				fclose ($file) ;
@@ -356,7 +362,9 @@ class lmv {
 				$str =fread ($file, $toRead) ;
 				fwrite ($sock, $str) ;
 				$data->bytesPosted =ftell ($file) ;
-				file_put_contents ($path, json_encode ($data)) ;
+				utils::log (" progress {$data->bytesPosted} ", "\r") ;
+				if ( file_put_contents ($path, json_encode ($data)) === false )
+					utils::log ("Could not save file - $path") ;
 				$read +=$toRead ;
 			}
 			

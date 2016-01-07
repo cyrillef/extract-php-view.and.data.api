@@ -45,15 +45,26 @@ class TranslateCommand extends Command {
 				InputArgument::REQUIRED,
 				'Project identitier'
 			)
+			->addOption (
+				'keys',
+				'k',
+				InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+				'optional keys',
+				array ('CONSUMERKEY=', 'CONSUMERSECRET=', 'MAILJET1=', 'MAILJET2=' )
+			)
 		;
 	}
 	
 	protected function execute (InputInterface $input, OutputInterface $output) {
-		$bucket =lmv::getDefaultBucket () ;
 		$identifier =$input->getArgument ('identifier') ;
 		if ( !$identifier )
 			$identifier ='1799-Auobj' ;
+		
+		$keys =$input->getOption ('keys') ;
+		foreach ( $keys as $envkey )
+			putenv ($envkey) ;
 	
+		$bucket =lmv::getDefaultBucket () ;
 		$translator =new Translator ($identifier, $bucket) ;
 		$bSuccess =$translator->translate () ;
 	

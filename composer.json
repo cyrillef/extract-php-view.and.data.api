@@ -47,10 +47,10 @@
   },
   "scripts": {
     "post-install-cmd": [
-    	"bower install"
+    	"php bowerphp.phar install"
     ],
     "post-update-cmd": [
-    	"bower update"
+    	"php bowerphp.phar update"
     ]
   },
   "config": {

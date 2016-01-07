@@ -183,7 +183,10 @@ class LmvResults implements ControllerProviderInterface {
 				utils::log ("Could not create lock file - $lock") ;
 		}
 		
-		$result =utils::executeScript ("/extract.php lmv:extractor $identifier") ;
+		$result =utils::executeScript (
+			"/extract.php lmv:extractor $identifier",
+			true
+		) ;
 		if ( $result === false )
 			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 		return (new Response ('ok', Response::HTTP_OK, [ 'Content-Type' => 'text/plain' ])) ;

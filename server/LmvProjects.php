@@ -163,8 +163,8 @@ class LmvProjects implements ControllerProviderInterface {
 		$idData =(object)[] ;
 		$path =$app->dataDir ("/$identifier.json") ;
 		try {
-			if ( $path === false )
-				throw new Exception () ;
+			if ( utils::realpath ($path) === false )
+				throw new \Exception () ;
 			$idData =file_get_contents ($path) ;
 			$idData =json_decode ($idData) ;
 			if ( isset ($idData->name) )
@@ -172,7 +172,7 @@ class LmvProjects implements ControllerProviderInterface {
 			else if ( isset ($idData->objects) && isset ($idData->objects [0]->key) )
 				$filename =$idData->objects [0]->key ;
 			else
-				throw new Exception () ;
+				throw new \Exception () ;
 		} catch ( Exception $ex ) {
 			$filename =str_replace ('/^[0-9]*\-/', '', $identifier) ;
 			$position =strlen ($filename) - 3 ;
@@ -225,7 +225,10 @@ class LmvProjects implements ControllerProviderInterface {
 			return (new Response ('', Response::HTTP_NOT_FOUND, [ 'Content-Type' => 'text/plain' ])) ;
 		}
 		
-		$result =utils::executeScript ("/translate.php lmv:translator {$connections->uniqueIdentifier}") ;
+		$result =utils::executeScript (
+			"/translate.php lmv:translator {$connections->uniqueIdentifier}",
+			true
+		) ;
 		if ( $result === false )
 			return (new Response ('', Response::HTTP_INTERNAL_SERVER_ERROR, [ 'Content-Type' => 'text/plain' ])) ;
 		// We submitted, no clue if it was successful or if it will fail.

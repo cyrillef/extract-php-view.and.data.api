@@ -26,6 +26,7 @@ use Symfony\Component\Finder\Finder ;
 use Twig_Loader_Filesystem ;
 use Twig_Environment ;
 use Unirest ;
+use Symfony\Component\HttpFoundation\Response;
 
 class Extractor {
 	private $identifier ;
@@ -163,14 +164,17 @@ class Extractor {
 			$data =$this->lmv->downloadItem ($urn) ;
 			
 			if ( is_int ($data) ) {
-				if ( $data == 404 ) {
-					utils::log ('Error 404 - ' . $urn . ' <ignoring>') ;
+				if (   $data == Response::HTTP_NOT_FOUND // 404
+					|| $data == Response::HTTP_GATEWAY_TIMEOUT // 504
+				) {
+					utils::log ("Error $data - $urn <ignoring>") ;
 					$fullpath =$this->lmv->dataDir ("/{$this->identifier}/" . utils::postStr ('/output/', $urn)) ;
 					return ((object)array (
 						'urn' => $urn,
 						'name' => utils::postStr ('/data/', $fullpath),
 						'size' => $item->size,
-						'error' => 404
+						'dl' => $item->size,
+						'error' => $data
 					)) ;
 				}
 				utils::log ('Download failed for ' . $urn) ;
@@ -222,15 +226,18 @@ class Extractor {
 			$fullpath =$this->lmv->dataDir ("/{$this->identifier}/" . utils::postStr ('/viewers/', $item)) ;
 			$filepath =dirname ($fullpath) ;
 	
-			if ( $response->code != 200 ) {
-				if ( $response->code == 404 ) {
-					utils::log ("Error 404 - $item <ignoring>") ;
+			if ( $response->code != Response::HTTP_OK ) {
+				if (   $response->code == Response::HTTP_NOT_FOUND  // 404
+					|| $response->code == Response::HTTP_GATEWAY_TIMEOUT // 504
+				) {
+					utils::log ("Error {$response->code} - $item <ignoring>") ;
 					utils::log ("Download failed for $fullpath") ;
 					return ((object)array (
 						'urn' => $item,
 						'name' => utils::postStr ('/data/', $fullpath),
 						'size' => 0,
-						'dl' => 0
+						'dl' => 0,
+						'error' => $response->code
 					)) ;
 				}
 				utils::log ("Download failed for $urn") ;
@@ -322,11 +329,11 @@ class Extractor {
 	}
 
 	protected function ReadManifest ($item) {
-		$path =$path =$this->lmv->dataDir ("/{$item->name}/", true) ;
+		$path =$this->lmv->dataDir ("/{$item->name}", true) ;
 		$content =file_get_contents ($path) ;
 		if ( $content === false )
 			throw new \Exception ("file_get_contents ($path) error") ;
-		$manifest =json_decode (gzuncompress ($content)) ;
+		$manifest =json_decode (gzdecode ($content)) ;
 		$uris =$this->loopManifest ($manifest, dirname ($item->urn)) ;
 		return ($uris) ;
 	}
@@ -337,7 +344,7 @@ class Extractor {
 			//$data [] =$urnParent . '/' . $doc->URI ;
 			//$data [] =utils.normalize ($urnParent . '/' . $doc->URI) ;
 			$data [] =(object)array (
-				'urn' => utils::normalize ($urnParent . '/' . $doc->URI),
+				'urn' => utils::normalize ("$urnParent/{$doc->URI}"),
 				'size' => (isset ($doc->size) ? intval ($doc->size) : Extractor::_default_size_)
 			) ;
 		if ( isset ($doc->assets) ) {

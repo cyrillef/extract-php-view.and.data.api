@@ -24,7 +24,7 @@ namespace ADN\Extract ;
 use Symfony\Component\Console\Command\Command ;
 use Symfony\Component\Console\Input\InputArgument ;
 use Symfony\Component\Console\Input\InputInterface ;
-//use Symfony\Component\Console\Input\InputOption ;
+use Symfony\Component\Console\Input\InputOption ;
 use Symfony\Component\Console\Output\OutputInterface ;
 use Symfony\Component\Console\Application ;
 
@@ -45,15 +45,26 @@ class ExtractCommand extends Command {
 				InputArgument::REQUIRED,
 				'Project identitier'
 			)
+			->addOption (
+				'keys',
+				'k',
+				InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+				'optional keys',
+				array ('CONSUMERKEY=', 'CONSUMERSECRET=', 'MAILJET1=', 'MAILJET2=' )
+			)
 		;
 	}
 
 	protected function execute (InputInterface $input, OutputInterface $output) {
-		$bucket =lmv::getDefaultBucket () ;
 		$identifier =$input->getArgument ('identifier') ;
 		if ( !$identifier )
 			$identifier ='1799-Auobj' ;
+
+		$keys =$input->getOption ('keys') ;
+		foreach ( $keys as $envkey )
+			putenv ($envkey) ;
 		
+		$bucket =lmv::getDefaultBucket () ;
 		$lmv =new lmv ($bucket) ;
 		$urn =$lmv->getURN ($identifier) ;
 		

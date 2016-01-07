@@ -222,8 +222,10 @@ function createProjectVignette (identifier, data) {
 }
 
 function scrollTo (identifier) {
-	var name ='#' + identifier ;
+	var name ='#vignette-' + identifier ;
 	// Calculate destination place
+	if ( $(name).length == 0 )
+		return ;
 	var dest =$(name).offset ().top ;
 	if ( $(name).offset ().top > $(document).height () - $(window).height () )
 		dest =$(document).height () - $(window).height () ;

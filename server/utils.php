@@ -23,8 +23,8 @@ namespace ADN\Extract ;
 
 class utils {
 	
-	public static function log ($msg) {
-		file_put_contents ('php://stderr', $msg . "\n") ;
+	public static function log ($msg, $ending ="\n") {
+		file_put_contents ('php://stderr', "{$msg}{$ending}") ;
 	}
 	
 	public static function realpath ($path) {
@@ -88,10 +88,20 @@ class utils {
 		return ($filtered [$first_key]) ;
 	}
 	
-	public static function executeScript ($scriptAndArgs, $scriptDir =__DIR__) {
+	public static function executeScript ($scriptAndArgs, $bPassKeys =false, $scriptDir =__DIR__) {
+		$scriptDir =utils::normalize ($scriptDir) ;
 		$bWindows =substr (php_uname (), 0, 7) == 'Windows' ;
-		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : '/usr/bin/php -q' ;
+		$cmd =$bWindows ? '"C:/Program Files/PHP.5.6.16/php.exe" ' : '/usr/bin/php -q ' ;
 		$cmd .="{$scriptDir}{$scriptAndArgs}" ;
+		if ( $bPassKeys === true ) {
+			$config =lmv::config () ;
+			$cmd .=" --keys CONSUMERKEY={$config ['credentials'] ['client_id']}"
+				 . " --keys CONSUMERSECRET={$config ['credentials'] ['client_secret']}"
+				 . " -k MAILJET1={$config ['MAILJET1']}"
+				 . " -k MAILJET2={$config ['MAILJET2']}" ;
+		} else if ( is_string ($bPassKeys) ) {
+			$cmd .=$bPassKeys ;
+		}
 		utils::log ("Launching command: $cmd") ;
 		$result =null ;
 		if ( $bWindows ) {
@@ -99,12 +109,13 @@ class utils {
 			//$result =exec ("start /B \"\" $cmd") ;
 			//$result =shell_exec ("start /B \"\" $cmd") ;
 			$com =new \COM ('WScript.shell') ;
-			$com->run ($cmd, 0, false) ;
+			//$cmd .=" > C:/temp/aaa.txt 2>&1" ;
+			$com->run ($cmd, 0, false) ; // 0 for prod, 1 for debug
 		} else {
 			//$result =exec ("$cmd > /dev/null 2>&1 &") ;
 			//$result =shell_exec ("$cmd > /dev/null 2>&1 &") ;
 			putenv ('SHELL=/bin/bash') ;
-			print `echo /usr/bin/php -q $cmd | at now 2>&1` ;
+			print `echo $cmd | at now 2>&1` ;
 		}
 		return (true) ;
 	}

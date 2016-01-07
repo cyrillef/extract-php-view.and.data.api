@@ -31,7 +31,7 @@ $config =array (
 	// If you which to use the Autodesk View & Data API on the staging server, change this url
 	'BaseEndPoint' => 'https://developer.api.autodesk.com',
 	'Version' => 'v1',
-	'bucket' => 'extract-autodesk-io',
+	'bucket' => 'extract-autodesk-io-2016',
 	'mailTo' => '',
 
 	'MAILJET1' => getenv ('MAILJET1') ? : '<replace with your mailjet consumer key>',

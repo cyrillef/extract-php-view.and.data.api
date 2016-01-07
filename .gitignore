@@ -33,6 +33,7 @@ report/
 vendor/
 composer.lock
 composer.phar
+bowerphp.phar
 
 # IDE files
 .idea/
