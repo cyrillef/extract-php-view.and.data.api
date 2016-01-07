@@ -76,6 +76,11 @@ which would update/install automatically via 'composer':
     "flowjs/flow-php-server": "^1.0"
 	```
 
+You also need to enable these php extensions:
+* php_curl.dll / .so
+* php_openssl.dll / .so
+* php_com_dotnet.dll (for Windows)
+ 
 This sample is also dependent on the client side on couple of javascript library
 which would update/install automatically via 'bower':
 
