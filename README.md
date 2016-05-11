@@ -15,7 +15,7 @@ Visit this [page](https://developer.autodesk.com) for instructions to get on-boa
 ## Live demo at
 http://extract-php.autodesk.io/
 
-[![](www/images/app.png)](http://extract-php.autodesk.io/)
+[![](www/images/app-page1.png)](http://extract-php.autodesk.io/)
 
 
 ## Motivation
@@ -238,8 +238,7 @@ Viewing 'bubbles' offline using Python
 
 1. This step needs to be done only once per machine. Download and install Python on your computer.
 2. Unzip the project result zip file into a folder.
-3. Download and unzip the 'Autodesk viewer engine' in the same folder.
-4. Start your local Python http server.<br />
+3. Start your local Python http server.<br />
    ```
    cd <myfolder>
 
@@ -259,8 +258,7 @@ Viewing 'bubbles' offline using Ruby
 
 1. This step needs to be done only once per machine. Download and install Ruby on your computer.
 2. Unzip the project result zip file into a folder.
-3. Download and unzip the 'Autodesk viewer engine' in the same folder.
-4. Start your local Ruby http server.<br />
+3. Start your local Ruby http server.<br />
    ```
    cd <myfolder>
 
